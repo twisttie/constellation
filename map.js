@@ -5,11 +5,11 @@ var m_width = $("#map").width(),
     country,
     state;
 
-var projection = d3.geo.mercator()
+var projection = d3.geoMercator()
     .scale(150)
     .translate([width / 2, height / 1.5]);
 
-var path = d3.geo.path()
+var path = d3.geoPath()
     .projection(projection);
 
 var svg = d3.select("#map").append("svg")
