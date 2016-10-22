@@ -1,16 +1,21 @@
 var github = require('octonode');
 
-var client = github.client('c485ee5c2e03ae3c18fb8d1444ccab752ddcf29d');
+var client = github.client('d346e600d078a32be7e87c0fdee89f8595e0c94e');
 var ghrepo = client.repo('ocaml/ocaml');
-var total = 0;
-for (var i = 1; i <= 20; i++) {
-    ghrepo.stargazers(i, 100, function(err, data, headers) {
-        //console.log("error: " + err);
-        //console.log("data: " + data);
-        //console.log(data.length)
-        total+=data.length;
-        //console.log("remaining: ");
-        //console.log(headers['x-ratelimit-remaining'])
-		console.log(total)
-    })
+
+function getAllStargazers(repo) {
+	function inner_getter(index, user_data) {
+		ghrepo.stargazers(index, 100, function(err, data, headers) {
+			if(data.length == 0) {
+				console.log(user_data);
+				return user_data
+			}
+			else {
+				console.log(index)
+				return inner_getter(index+1, data.concat(user_data))
+			}
+		})
+	}
+	return inner_getter(1, [])
 }
+console.log(getAllStargazers('ocaml/ocaml'))
