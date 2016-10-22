@@ -1,21 +1,32 @@
 var github = require('octonode');
+var getCoords = require('./getCoords').getCoords
 
-var client = github.client('');
+var client = github.client(process.env.GITHUB_KEY);
 var ghrepo = client.repo('ocaml/ocaml');
 
-function getAllStargazers(repo) {
+function getAllUserLocationsForRepo(repo) {
+	function location_getter(user) {
+		var user = client.user(user.login)
+		user.info(function(err, data, headers) {
+			if (data === undefined) return
+			if (data.location != null) console.log(data.location)
+		})
+	}
 	function inner_getter(index, user_data) {
 		ghrepo.stargazers(index, 100, function(err, data, headers) {
-			if(data.length == 0) {
-				console.log(user_data);
-				return user_data
+			if (err !== undefined) console.log(err)
+			if (data === undefined) {
+				user_data.map(location_getter);
+				return;
+			}
+			else if(data.length == 0) {
+				user_data.map(location_getter);
 			}
 			else {
-				console.log(index)
-				return inner_getter(index+1, data.concat(user_data))
+				inner_getter(index+1, data.concat(user_data))
 			}
 		})
 	}
-	return inner_getter(1, [])
+	inner_getter(1, [])
 }
-console.log(getAllStargazers('ocaml/ocaml'))
+getAllUserLocationsForRepo('VansonLeung/react-native-keyboard-aware-view')
