@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.4.6",
+    "express": "^4.14.0",
     "jsdom": "^9.8.0",
     "node-geocoder": "^3.15.1",
     "octonode": "^0.7.6",

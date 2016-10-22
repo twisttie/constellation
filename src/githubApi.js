@@ -1,7 +1,9 @@
+'use strict';
+
 var github = require('octonode');
 var getCoords = require('./getCoords').getCoords
 
-var client = github.client(process.env.GITHUB_KEY);
+var client = github.client(require('./secret'));
 
 function getAllUserLocationsForRepo(repo, location_callback) {
     var ghrepo = client.repo(repo)
