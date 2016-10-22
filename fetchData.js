@@ -116,8 +116,8 @@ function findAllLocations (userUrls, listOfChunks) {
     var filteredData = data.filter(function (location) {
       if (location){
         getCoords(location, function(err, res) {
-          if (err || !res || typeof res === undefined) return (0, 0)
-          if (typeof res[0] === undefined) return (0, 0)
+          if (err || !res || res === undefined) return (0, 0)
+          if (res[0] === undefined) return (0, 0)
           return (res[0].latitude, res[0].longitude)
         });
       }
