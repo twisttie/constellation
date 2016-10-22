@@ -40,7 +40,10 @@ const resolveStargazers = (data, stargazers) => {
     data,
     function (err, window) {
       if (err) throw new Error(err);
-      //console.log('...done!');
+      if (window.document.querySelector('.container p').innerHTML.indexOf('abuse detection mechanism') > -1) {
+        console.log('!!! Blocked by GitHub !!!');
+        return;
+      }
       var stargazersCount = window.document.querySelectorAll(STARGAZER_USER_URL_DOM_PATH).length;
       for (let i = 0; i < stargazersCount; i++) {
         stargazers.push(window.document.querySelectorAll(STARGAZER_USER_URL_DOM_PATH)[i].href);
@@ -116,8 +119,8 @@ function findAllLocations (userUrls, listOfChunks) {
     var filteredData = data.filter(function (location) {
       if (location){
         getCoords(location, function(err, res) {
-          if (err || !res || typeof res === undefined) return (0, 0)
-          if (typeof res[0] === undefined) return (0, 0)
+          if (err || !res || res === undefined) return (0, 0)
+          if (res[0] === undefined) return (0, 0)
           return (res[0].latitude, res[0].longitude)
         });
       }
