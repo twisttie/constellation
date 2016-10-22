@@ -20,20 +20,20 @@ var totalStargazers = 0;
 
 // Start
 startStargazing(USERNAME, PACKAGE_NAME);
-// /////
+////////
 
 var start = new Date().getTime();
 
 function getPromiseCall (url) {
-  console.log(url)
   return Promise.promisify(x(url, 'body@html'))().then(function (data) {
     return resolveStargazers(data);
   });
 }
 
 // Starting point
-function startStargazing (username, repository) {
-  x('https://github.com/'+username+'/'+repository+'/stargazers', 'body@html')
+function startStargazing (username, repository, page) {
+  page = page ? page : 1;
+  x('https://github.com/'+username+'/'+repository+'/stargazers?page='+page, 'body@html')
   (function(err, data) {
     if (err) throw new Error(err);
     return resolveStargazers(data);
@@ -47,6 +47,14 @@ const resolveStargazers = (data) => {
     data,
     function (err, window) {
       if (err) throw new Error(err);
+      if (window.document.querySelector('.container p').innerHTML.indexOf('abuse detection mechanism') > -1) {
+        console.log('Blocked by GitHub');
+        setTimeout(() => {
+          startStargazing('nickzuber', 'needle', --pg)
+        }, 5000);
+        return;
+      }
+
       var stargazers = [];
       var stargazersCount = window.document.querySelectorAll(STARGAZER_USER_URL_DOM_PATH).length;
       for (let i = 0; i < stargazersCount; i++) {
@@ -61,7 +69,9 @@ const resolveStargazers = (data) => {
         }
       }
       totalStargazers += stargazers.length;
-      findAllLocations(stargazers, nextPageURL);
+      if (stargazers.length > 0) {
+        findAllLocations(stargazers, nextPageURL);
+      }
     }
   );
 }
@@ -102,7 +112,7 @@ function incrementallyLoadUserData (stargazers) {
  * @return {void}
  */
 function findAllLocations (userUrls, nextPageURL) {
-  console.log('Loading '+userUrls.length+' locations...');
+  console.log('Resolving '+userUrls.length+' locations...');
   var promiseUsers = [];
   userUrls.forEach(function (url) {
     promiseUsers.push(
@@ -115,19 +125,16 @@ function findAllLocations (userUrls, nextPageURL) {
     var filteredData = data.filter(function (location) {
       if (location){
         getCoords(location, function(err, res) {
-          if (err || !res || typeof res === 'undefined') return (0, 0)
-          if (typeof res[0] === 'undefined') return (0, 0)
-          return (res[0].latitude, res[0].longitude)
+          if (err || !res || typeof res === 'undefined') return (0, 0);
+          if (typeof res[0] === 'undefined') return (0, 0);
+          return (res[0].latitude, res[0].longitude);
         });
       }
     });
     console.log('...done resolving chunk!');
   }).finally(function () {
     if (nextPageURL) {
-      console.log('SLEEPING FOR 5000ms');
-      setTimeout(() => {
-        getPromiseCall(nextPageURL);
-      }, 5000);
+      getPromiseCall(nextPageURL);
     } else {
       console.log('...done all chunking');
       var end = new Date().getTime();
