@@ -3,6 +3,7 @@
 const Promise = require('bluebird');
 const vDOM = require('jsdom');
 const Xray = require('x-ray');
+const getCoords = require('./getCoords').getCoords
 const x = Xray();
 
 // constants
@@ -113,7 +114,13 @@ function findAllLocations (userUrls, listOfChunks) {
   });
   Promise.all(promiseUsers).then(function(data) {
     var filteredData = data.filter(function (location) {
-      if (location) return location;
+      if (location){
+        getCoords(location, function(err, res) {
+          if (err || !res || typeof res === undefined) return (0, 0)
+          if (typeof res[0] === undefined) return (0, 0)
+          return (res[0].latitude, res[0].longitude)
+        });
+      }
     });
     console.log('...done resolving chunk!');
   }).finally(function () {
