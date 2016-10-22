@@ -1,3 +1,4 @@
+
 var m_width = $("#map").width(),
   width = 938,
   height = 500,
@@ -17,12 +18,6 @@ var svg = d3.select("#map").append("svg")
   .attr("width", m_width)
   .attr("height", m_width * height / width);
 
-svg.append("rect")
-  .attr("class", "background")
-  .attr("width", width)
-  .attr("height", height)
-  .on("click", country_clicked);
-
 var g = svg.append("g");
 
 d3.json("json/countries.topo.json", function(error, us) {
@@ -36,6 +31,34 @@ d3.json("json/countries.topo.json", function(error, us) {
   .attr("d", path)
   .on("click", country_clicked);
 });
+
+function addNode(longitude, latitude) {
+  svg.append("circle")
+    .attr("r", 5)
+    .attr("transform", function() {return "translate(" 
+      + projection([longitude, latitude]) + ")";})
+    .style("fill", "red");
+}
+
+addNode(-75, 42);
+
+addNode(100, 42);
+
+function addEdge(startx, starty, endx, endy) {
+  svg.append("line")
+  .attr("transform", function() {return "translate("
+         + projection([startx, starty, endx, endy]) + ")";})
+  .attr("x1", startx)
+  .attr("y1", starty)
+  .attr("x2", endx)
+  .attr("y2", endy)
+  .attr("stroke-width", 0.5)
+  .attr("stroke", "black");
+}
+
+addEdge(-75, 42, 100, 42);
+
+d3.select()
 
 function zoom(xyz) {
   g.transition()
