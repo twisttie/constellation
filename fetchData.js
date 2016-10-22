@@ -13,34 +13,41 @@ const NEXT_PAGE_LINK_TEXT = 'Next';
 const CHUNK_SIZE = 50;
 
 // Mock data
-const USERNAME = 'ocaml';
-const PACKAGE_NAME = 'ocaml';
+var USERNAME = 'isRuslan';
+var PACKAGE_NAME = 'awesome-elm';
 var pg = 1;
+var totalStargazers = 0;
+
+// Start
+startStargazing(USERNAME, PACKAGE_NAME);
+// /////
 
 var start = new Date().getTime();
 
-function getPromiseCall (url, stargazers) {
+function getPromiseCall (url) {
+  console.log(url)
   return Promise.promisify(x(url, 'body@html'))().then(function (data) {
-    return resolveStargazers(data, stargazers);
+    return resolveStargazers(data);
   });
 }
 
 // Starting point
-x('https://github.com/'+USERNAME+'/'+PACKAGE_NAME+'/stargazers', 'body@html')
-(function(err, data) {
-  if (err) throw new Error(err);
-  var stargazers = [];
-  return resolveStargazers(data, stargazers);
-});
+function startStargazing (username, repository) {
+  x('https://github.com/'+username+'/'+repository+'/stargazers', 'body@html')
+  (function(err, data) {
+    if (err) throw new Error(err);
+    return resolveStargazers(data);
+  });
+}
 
-const resolveStargazers = (data, stargazers) => {
+const resolveStargazers = (data) => {
   if (!data) if (err) throw new Error('data came back null in `resolveStargazers`');
   console.log('Loading stargazers (pg '+(pg++)+')...');
   vDOM.env(
     data,
     function (err, window) {
       if (err) throw new Error(err);
-      //console.log('...done!');
+      var stargazers = [];
       var stargazersCount = window.document.querySelectorAll(STARGAZER_USER_URL_DOM_PATH).length;
       for (let i = 0; i < stargazersCount; i++) {
         stargazers.push(window.document.querySelectorAll(STARGAZER_USER_URL_DOM_PATH)[i].href);
@@ -53,16 +60,8 @@ const resolveStargazers = (data, stargazers) => {
           break;
         }
       }
-      if (nextPageURL) {
-        getPromiseCall(nextPageURL, stargazers);
-      } else {
-        console.log('...done!')
-        let end = new Date().getTime();
-        let time = end - start;
-        console.log('Found '+stargazers.length+' stargazers');
-        console.log('This process took ~'+(time/1000)+'s\n');
-        incrementallyLoadUserData(stargazers);
-      }
+      totalStargazers += stargazers.length;
+      findAllLocations(stargazers, nextPageURL);
     }
   );
 }
@@ -95,15 +94,15 @@ function incrementallyLoadUserData (stargazers) {
 }
 
 /**
- * Given an array of github user urls and a list of chunks left to resolve, we
+ * Given an array of github user urls and the next page of stargazers, we
  * find all the locations of the github user list and when we're all done, we
- * check to see if we have any more chunks to resolve and then move onto those.
- * @param  {Array.string}   userUrls     The list of github account urls.
- * @param  {Array.function} listOfChunks The list of chunks left to resolve.
+ * check to see if we have any more pages of stargazers to resolve.
+ * @param  {Array.string} userUrls     The list of github account urls.
+ * @param  {string}       nextPageURL  The url of the next stargazers page.
  * @return {void}
  */
-function findAllLocations (userUrls, listOfChunks) {
-  console.log('Loading '+CHUNK_SIZE+' locations...');
+function findAllLocations (userUrls, nextPageURL) {
+  console.log('Loading '+userUrls.length+' locations...');
   var promiseUsers = [];
   userUrls.forEach(function (url) {
     promiseUsers.push(
@@ -116,24 +115,24 @@ function findAllLocations (userUrls, listOfChunks) {
     var filteredData = data.filter(function (location) {
       if (location){
         getCoords(location, function(err, res) {
-          if (err || !res || typeof res === undefined) return (0, 0)
-          if (typeof res[0] === undefined) return (0, 0)
+          if (err || !res || typeof res === 'undefined') return (0, 0)
+          if (typeof res[0] === 'undefined') return (0, 0)
           return (res[0].latitude, res[0].longitude)
         });
       }
     });
     console.log('...done resolving chunk!');
   }).finally(function () {
-    // do something before we move onto the next chunk
-    var currentChunk = listOfChunks.shift();
-    // If we have chunks left to resolve
-    if (listOfChunks.length) {
-      currentChunk(listOfChunks);
+    if (nextPageURL) {
+      console.log('SLEEPING FOR 5000ms');
+      setTimeout(() => {
+        getPromiseCall(nextPageURL);
+      }, 5000);
     } else {
       console.log('...done all chunking');
       var end = new Date().getTime();
       var time = end - start;
-      console.log('Entire process took ~'+(time/1000)+'s');
+      console.log('Entire process took ~'+(time/1000)+'s and we found '+totalStargazers+' stargazers');
     }
   });
 }
