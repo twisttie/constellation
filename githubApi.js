@@ -2,9 +2,9 @@ var github = require('octonode');
 var getCoords = require('./getCoords').getCoords
 
 var client = github.client(process.env.GITHUB_KEY);
-var ghrepo = client.repo('ocaml/ocaml');
 
 function getAllUserLocationsForRepo(repo) {
+	var ghrepo = client.repo(repo)
 	function location_getter(user) {
 		var user = client.user(user.login)
 		user.info(function(err, data, headers) {
