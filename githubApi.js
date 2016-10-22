@@ -1,6 +1,6 @@
 var github = require('octonode');
 
-var client = github.client('d346e600d078a32be7e87c0fdee89f8595e0c94e');
+var client = github.client('');
 var ghrepo = client.repo('ocaml/ocaml');
 
 function getAllStargazers(repo) {
