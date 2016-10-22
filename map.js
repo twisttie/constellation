@@ -26,7 +26,7 @@ svg.append("rect")
 
 var g = svg.append("g");
 
-d3.json("/json/countries.topo.json", function(error, us) {
+d3.json("countries.json", function(error, us) {
   g.append("g")
     .attr("id", "countries")
     .selectAll("path")
@@ -36,6 +36,8 @@ d3.json("/json/countries.topo.json", function(error, us) {
     .attr("id", function(d) { return d.id; })
     .attr("d", path)
     .on("click", country_clicked);
+    if (error) return console.error(error);
+    console.log(us);
 });
 
 function zoom(xyz) {
