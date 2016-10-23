@@ -2,44 +2,50 @@
 
 var github = require('octonode');
 var getCoords = require('./getCoords').getCoords
+var Promise = require('bluebird')
+var client = github.client(process.env.GITHUB_KEY);
 
-var client = github.client(require('./secret'));
-
-function getAllUserLocationsForRepo(repo, location_callback) {
+function getAllUserLocationsForRepo(repo) {
     var ghrepo = client.repo(repo)
+    var get_stargazers = Promise.promisify(ghrepo.stargazers, { context: ghrepo })
 
     function location_getter(user) {
         var user = client.user(user.login)
-        user.info(function(err, data, headers) {
+        var user_info = Promise.promisify(user.info, { context: user })
+        return user_info().then(function(data, err, headers) {
             if (data === undefined || data.location == null) {
                 return
             }
-            getCoords(data.location, function(err, res) {
+            return getCoords(data.location).then(function(res) {
                 if (res === undefined || res[0] === undefined) {
                     return
                 }
-                location_callback(res[0].latitude, res[0].longitude)
+                return {
+                    lat: res[0].latitude,
+                    long: res[0].longitude
+                }
             })
         })
     }
 
-    function inner_getter(index, user_data) {
-        ghrepo.stargazers(index, 100, function(err, data, headers) {
-            if (err !== undefined) console.log(err)
-            if (data === undefined) {
-                console.log("undefined case: " + user_data.length)
-                user_data.forEach(location_getter);
-                return;
-            } else if (data.length == 0) {
+    function get_all_stargazers(index, user_data) {
+        return get_stargazers(index, 100).then(function(data, err, headers) {
+            return data
+        }).then(function(data) {
+            if (data.length == 0) {
                 console.log("base case: " + user_data.length)
-                user_data.forEach(location_getter);
+                return user_data.map(location_getter)
             } else {
-                inner_getter(index + 1, data.concat(user_data))
+                return get_all_stargazers(index + 1, data.concat(user_data))
             }
         })
     }
-    inner_getter(1, [])
+    return get_all_stargazers(1, [])
 }
-getAllUserLocationsForRepo('GJNilsen/YPDrawSignatureView', function(lat, long) {
-    console.log("(" + lat + ", " + long + ")")
+getAllUserLocationsForRepo('nchaulet/node-geocoder').then(function(data) {
+    Promise.all(data).then(function(promise_data) {
+        console.log(promise_data.filter(function(obj) {
+            return obj !== undefined
+        }))
+    })
 })
