@@ -35,28 +35,47 @@ d3.json("json/countries.topo.json", function(error, us) {
 function addNode(longitude, latitude) {
   svg.append("circle")
     .attr("r", 5)
-    .attr("transform", function() {return "translate(" 
-      + projection([longitude, latitude]) + ")";})
+    .attr("transform", function() {
+      return "translate(" 
+      + projection([longitude, latitude]) + ")";
+
+    })
     .style("fill", "red");
 }
+
+var arrie = [100, 42];
+projection(arrie);
+
+console.log(projection(arrie));
 
 addNode(-75, 42);
 
 addNode(100, 42);
 
+addNode(-50, 50);
+
+addNode(70, 50);
+
 function addEdge(startx, starty, endx, endy) {
+  var startNode = projection([startx, starty]);
+  var endNode = projection([endx, endy]);
+
   svg.append("line")
-  .attr("transform", function() {return "translate("
-         + projection([startx, starty, endx, endy]) + ")";})
-  .attr("x1", startx)
-  .attr("y1", starty)
-  .attr("x2", endx)
-  .attr("y2", endy)
-  .attr("stroke-width", 0.5)
-  .attr("stroke", "black");
+     .attr("x1", startNode[0])
+     .attr("y1", startNode[1])
+     .attr("x2", endNode[0])
+     .attr("y2", endNode[1])
+     .attr("stroke-width", 0.5)
+     .attr("stroke", "black");
 }
 
+//addEdge(-75 + 21, 42 + 14, 100 + 303, 42 + 15);
+//addEdge(-50 + 21, 50 + 14, 70 + 303, 50 + 15);
+//addEdge(-54, 56, 403, 57);
+//addEdge(272, 211, 730, 211);
 addEdge(-75, 42, 100, 42);
+addEdge(-75, 42, 70, 50);
+addEdge(-75, 42, -50, 50);
 
 d3.select()
 
