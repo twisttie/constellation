@@ -42,10 +42,11 @@ function getAllUserLocationsForRepo(repo) {
     }
     return get_all_stargazers(1, [])
 }
-getAllUserLocationsForRepo('nchaulet/node-geocoder').then(function(data) {
-    Promise.all(data).then(function(promise_data) {
-        console.log(promise_data.filter(function(obj) {
-            return obj !== undefined
-        }))
-    })
-})
+exports.userLocations = getAllUserLocationsForRepo
+// getAllUserLocationsForRepo('nchaulet/node-geocoder').then(function(data) {
+//     Promise.all(data).then(function(promise_data) {
+//         console.log(promise_data.filter(function(obj) {
+//             return obj !== undefined
+//         }))
+//     })
+// })
