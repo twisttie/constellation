@@ -36,7 +36,7 @@ function addNode(longitude, latitude) {
   svg.append("circle")
     .attr("r", 5)
     .attr("transform", function() {
-      return "translate(" 
+      return "translate("
       + projection([longitude, latitude]) + ")";
 
     })
@@ -46,15 +46,30 @@ function addNode(longitude, latitude) {
 var arrie = [100, 42];
 projection(arrie);
 
+var BOSTON = {
+  lat: 42.3601,
+  long: -71.0589
+}
+
 console.log(projection(arrie));
-
-addNode(-75, 42);
-
-addNode(100, 42);
-
-addNode(-50, 50);
-
-addNode(70, 50);
+$.get('/locations/nickzuber/levenshtein-lite', function(){console.log('df')})
+.success(function (data) {
+  console.log(data)
+  data.forEach(function(d) {
+    addNode(d.long, d.lat);
+    addEdge(BOSTON.long, BOSTON.lat, d.long, d.lat);
+  });
+})
+.fail(function (err) {
+  console.warn(err);
+});
+// addNode(-75, 42);
+//
+// addNode(100, 42);
+//
+// addNode(-50, 50);
+//
+// addNode(70, 50);
 
 function addEdge(startx, starty, endx, endy) {
   var startNode = projection([startx, starty]);
@@ -73,9 +88,9 @@ function addEdge(startx, starty, endx, endy) {
 //addEdge(-50 + 21, 50 + 14, 70 + 303, 50 + 15);
 //addEdge(-54, 56, 403, 57);
 //addEdge(272, 211, 730, 211);
-addEdge(-75, 42, 100, 42);
-addEdge(-75, 42, 70, 50);
-addEdge(-75, 42, -50, 50);
+// addEdge(-75, 42, 100, 42);
+// addEdge(-75, 42, 70, 50);
+// addEdge(-75, 42, -50, 50);
 
 d3.select()
 
@@ -126,7 +141,7 @@ function country_clicked(d) {
 
     zoom(xyz);
     g.selectAll("#" + d.id).style('display', 'none');
-    });    
+    });
   } else {
     zoom(xyz);
   }
@@ -159,7 +174,7 @@ function state_clicked(d) {
     .attr("d", path.pointRadius(20 / xyz[2]));
 
     zoom(xyz);
-  });    
+  });
   } else {
   state = null;
   country_clicked(country);

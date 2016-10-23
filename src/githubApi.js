@@ -3,7 +3,8 @@
 var github = require('octonode');
 var getCoords = require('./getCoords').getCoords
 var Promise = require('bluebird')
-var client = github.client(process.env.GITHUB_KEY);
+// var client = github.client(process.env.GITHUB_KEY);
+var client = github.client(require('../secret'));
 
 function getAllUserLocationsForRepo(repo) {
     var ghrepo = client.repo(repo)
@@ -13,6 +14,7 @@ function getAllUserLocationsForRepo(repo) {
         var user = client.user(user.login)
         var user_info = Promise.promisify(user.info, { context: user })
         return user_info().then(function(data, err, headers) {
+            if (err) throw new Error(err);
             if (data === undefined || data.location == null) {
                 return
             }
@@ -30,6 +32,7 @@ function getAllUserLocationsForRepo(repo) {
 
     function get_all_stargazers(index, user_data) {
         return get_stargazers(index, 100).then(function(data, err, headers) {
+            if (err) throw new Error(err);
             return data
         }).then(function(data) {
             if (data.length == 0) {
